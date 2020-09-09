@@ -5,14 +5,14 @@ baseurl: "" # for test: remove string '/space-jekyll-template' to ''
 url: "http://kchun0513.github.io" # for test: remove string 'http://victorvoid.github.io' to '' but in production: 'https://yourusername.github.io'
 
 # User settings
-username: kchun0513
-user_title: kchun0513
+username: 김충훈
+user_title: 김충훈|한양대학교 ERICA 소프트웨어학부 20학번
 email: kchun0513@hanyang.ac.kr
 twitter_username: 
 github_username:  kchun0513
 gplus_username:  
-linkedin_public_url: loremipsum # Example: For public profile 'www.linkedin.com/in/john-smith', 'john-smith' is your linkedin_public_url
-disqus_username: loremipsum
+linkedin_public_url: # Example: For public profile 'www.linkedin.com/in/john-smith', 'john-smith' is your linkedin_public_url
+disqus_username: 
 profile_picture: https://m.chuing.net/mai/img_character_main/8/741482488548.jpg
 
 # Build settings
