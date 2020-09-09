@@ -47,11 +47,11 @@ links:
       key_trigger: 5
   section_2:
     - title: github
-      url: http://www.github.com/kchun0513
+      url: github.com/kchun0513
       new_tab: true
       key_trigger: g
     - title: Instagram
-      url: https://www.instagram.com/kchun0513
+      url: instagram.com/kchun0513
       new_tab: true
       key_trigger: t
     - title: search
