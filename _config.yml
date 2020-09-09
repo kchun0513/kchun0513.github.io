@@ -81,7 +81,7 @@ show_contact_card: true
 # contact_title: The will be displayed as the title in the Contact section
 contact_title: Contact
 # contact_description: This will be displayed under the title.
-contact_description: email: kchun0513@hanyang.ac.kr
+contact_description: email - kchun0513@hanyang.ac.kr
 
 # GITHUB-METADATA
 # Set this to your forked repository
