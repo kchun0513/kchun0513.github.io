@@ -1,137 +1,100 @@
-var gulp = require('gulp');
-var browserSync = require('browser-sync');
-var sass = require('gulp-sass');
-var cssnano = require('gulp-cssnano');
-var prefix = require('gulp-autoprefixer');
-var concat = require('gulp-concat');
-var rename = require('gulp-rename');
-var uglify = require('gulp-uglify');
-var cp = require('child_process');
+var gulp        = require('gulp'),
+	plumber     = require('gulp-plumber'),
+	browserSync = require('browser-sync'),
+	stylus      = require('gulp-stylus'),
+	uglify      = require('gulp-uglify'),
+	concat      = require('gulp-concat'),
+	jeet        = require('jeet'),
+	rupture     = require('rupture'),
+	koutoSwiss  = require('kouto-swiss'),
+	prefixer    = require('autoprefixer-stylus'),
+	imagemin    = require('gulp-imagemin'),
+	cp          = require('child_process');
+
+var messages = {
+	jekyllBuild: '<span style="color: grey">Running:</span> $ jekyll build'
+};
+
+var jekyllCommand = (/^win/.test(process.platform)) ? 'jekyll.bat' : 'jekyll';
 
 /**
- * Compile and minify sass
+ * Build the Jekyll Site
  */
-function styles() {
-  return gulp
-    .src([ '_sass/*.scss' ])
-    .pipe(
-      sass({
-        includePaths: [ 'scss' ],
-        onError: browserSync.notify
-      })
-    )
-    .pipe(prefix([ 'last 3 versions', '> 1%', 'ie 8' ], { cascade: true }))
-    .pipe(rename('main.min.css'))
-    .pipe(cssnano())
-    .pipe(gulp.dest('_site/assets/css/'))
-    .pipe(browserSync.reload({ stream: true }))
+gulp.task('jekyll-build', function (done) {
+	browserSync.notify(messages.jekyllBuild);
+	return cp.spawn(jekyllCommand, ['build'], {stdio: 'inherit'})
+		.on('close', done);
+});
+
+/**
+ * Rebuild Jekyll & do page reload
+ */
+gulp.task('jekyll-rebuild', ['jekyll-build'], function () {
+	browserSync.reload();
+});
+
+/**
+ * Wait for jekyll-build, then launch the Server
+ */
+gulp.task('browser-sync', ['jekyll-build'], function() {
+	browserSync({
+		server: {
+			baseDir: '_site'
+		}
+	});
+});
+
+/**
+ * Stylus task
+ */
+gulp.task('stylus', function(){
+		gulp.src('src/styl/main.styl')
+		.pipe(plumber())
+		.pipe(stylus({
+			use:[koutoSwiss(), prefixer(), jeet(),rupture()],
+			compress: true
+		}))
+		.pipe(gulp.dest('_site/assets/css/'))
+		.pipe(browserSync.reload({stream:true}))
     .pipe(gulp.dest('assets/css'));
-}
-
-function stylesVendors() {
-  return gulp
-    .src([ '_sass/vendors/*.css' ])
-    .pipe(concat('vendors.min.css'))
-    .pipe(cssnano())
-    .pipe(gulp.dest('_site/assets/css/'))
-    .pipe(gulp.dest('assets/css'));
-}
+});
 
 /**
- * Compile and minify js
+ * Javascript Task
  */
-function scripts() {
-  return gulp
-    .src([ '_js/app.js' ])
-    .pipe(rename('app.min.js'))
-    .pipe(uglify())
-    .pipe(gulp.dest('_site/assets/js'))
-    .pipe(browserSync.reload({ stream: true }))
-    .pipe(gulp.dest('assets/js'));
-}
-
-function scriptsVendors() {
-  return gulp
-    .src([ '_js/vendors/*.js' ])
-    .pipe(concat('vendors.min.js'))
-    .pipe(uglify())
-    .pipe(gulp.dest('_site/assets/js'))
-    .pipe(gulp.dest('assets/js'));
-}
+gulp.task('js', function(){
+	return gulp.src('src/js/**/*.js')
+		.pipe(plumber())
+		.pipe(concat('main.js'))
+		.pipe(uglify())
+		.pipe(gulp.dest('assets/js/'))
+		.pipe(browserSync.reload({stream:true}))
+    .pipe(gulp.dest('_site/assets/js/'));
+});
 
 /**
- * Server functionality handled by BrowserSync
+ * Imagemin Task
  */
-function browserSyncServe(done) {
-  browserSync.init({
-    server: '_site',
-    port: 4000
-  });
-  done();
-}
-
-function browserSyncReload(done) {
-  browserSync.reload();
-  done();
-}
+gulp.task('imagemin', function() {
+	return gulp.src('src/img/**/*.{jpg,png,gif}')
+		.pipe(plumber())
+		.pipe(imagemin({ optimizationLevel: 3, progressive: true, interlaced: true }))
+		.pipe(gulp.dest('assets/img/'));
+});
 
 /**
- * Build Jekyll site
+ * Watch stylus files for changes & recompile
+ * Watch html/md files, run jekyll & reload BrowserSync
  */
-function jekyll(done) {
-  return cp
-    .spawn(
-      'bundle',
-      [
-        'exec',
-        'jekyll',
-        'build',
-        '--incremental',
-        '--config=_config.yml,_config_dev.yml'
-      ],
-      {
-        stdio: 'inherit'
-      }
-    )
-    .on('close', done);
-}
+gulp.task('watch', function () {
+	gulp.watch('src/styl/**/*.styl', ['stylus']);
+	gulp.watch('src/js/**/*.js', ['js']);
+	gulp.watch('src/img/**/*.{jpg,png,gif}', ['imagemin']);
+	gulp.watch(['*.html', '_includes/*.html', '_layouts/*.html', '_posts/*'], ['jekyll-rebuild']);
+});
 
 /**
- * Watch source files for changes & recompile
- * Watch html/md files, run Jekyll & reload BrowserSync
+ * Default task, running just `gulp` will compile the stylus,
+ * compile the jekyll site, launch BrowserSync & watch files.
  */
-function watchData() {
-  gulp.watch(
-    [ '_data/*.yml', '_config.yml', 'assets/*.json' ],
-    gulp.series(jekyll, browserSyncReload)
-  );
-}
-
-function watchMarkup() {
-  gulp.watch(
-    [ 'index.html', '_includes/*.html', '_layouts/*.html' ],
-    gulp.series(jekyll, browserSyncReload)
-  );
-}
-
-function watchScripts() {
-  gulp.watch([ '_js/*.js' ], scripts);
-}
-
-function watchStyles() {
-  gulp.watch([ '_sass/*.scss' ], styles);
-}
-
-function watch() {
-  gulp.parallel(watchData, watchMarkup, watchScripts, watchStyles);
-}
-
-var compile = gulp.parallel(styles, stylesVendors, scripts, scriptsVendors);
-var serve = gulp.series(compile, jekyll, browserSyncServe);
-var watch = gulp.parallel(watchData, watchMarkup, watchScripts, watchStyles);
-
-/**
- * Default task, running just `gulp` will compile the sass,
- * compile the Jekyll site, launch BrowserSync & watch files.
- */
-gulp.task('default', gulp.parallel(serve, watch));
+gulp.task('default', ['js', 'stylus', 'browser-sync', 'watch']);
