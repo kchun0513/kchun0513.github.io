@@ -34,7 +34,7 @@ show_aboutme_card: true
 # about_me_title: The will be displayed as the title in the About Me section
 about_me_title: About Me
 # about_me_description: This will be displayed under the title.
-about_me_description: 한양대학교 에리카캠퍼스 소프트웨어융합대학 소프트웨어학부 20학번 김충훈입니다. 관심분야: 게임, 그래픽, 모바일 앱. 요즘은 학회 워크샵에서 진행했던 디스코드라는 메신저의 봇(자동응답) 시스템 제작해보는 것에 재미를 느껴서 현재도 개인적으로 이것저것 해보고 있습니다.
+about_me_description: Interested Fields : Game, Graphics, Mobile application
 
 # SKILLS SECTION
 # show_skills_card:
@@ -127,4 +127,4 @@ exclude:
     "package.json",
   ]
 
-encoding: UTF-8
+
