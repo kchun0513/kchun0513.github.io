@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ### VALUES YOU SHOULD CHANGE ###
 
 # GENERAL SITE SETTINGS
@@ -127,6 +126,3 @@ exclude:
     "node_modules",
     "package.json",
   ]
-=======
-theme: jekyll-theme-cayman
->>>>>>> c1692cae017b883354737fa91b0c0eb7c9daf218
